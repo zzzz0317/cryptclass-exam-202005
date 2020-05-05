@@ -2,6 +2,7 @@ import hashlib
 import hmac
 import zlib
 import base64
+import time
 
 def zlibs(m):
     return str(base64.b64encode(zlib.compress(m.encode("utf-8"),9)),"utf-8")
@@ -36,7 +37,7 @@ def decrypt(msg, key):
     realLen = len(msg) / 64
     if realLen % 1 != 0:
         print("消息为: " + msg)
-        return "解密失败，消息大小不正确！"
+        return "解密失败，消息大小不正确，请检查消息完整性"
     msgList = []
     for i in range(int(realLen)):
         ii = i * 64
@@ -46,7 +47,7 @@ def decrypt(msg, key):
     for j in msgList:
         b = clash(j, key)
         if (b == False):
-            return "解密失败，块" + j + "对撞无结果！"
+            return "解密失败，块\"" + zlibs(j) + "\"对撞无结果！请检查密钥！"
         result += b
         key = genHashKey(result)
     return result
@@ -70,10 +71,14 @@ def main():
         mode = input("请选择模式:\n1.加密\n2.解密\n3.修改密钥\n4.退出\n")
         if (mode == "1"):
             print("加密结果:")
+            startTime = time.time()
             print(zlibs(encrypt(msg, key)))
+            print("耗时:" + str(time.time() - startTime))
         elif (mode == "2"):
             print("解密结果:")
+            startTime = time.time()
             print(decrypt(msg, key))
+            print("耗时:" + str(time.time() - startTime))
         elif (mode == "3"):
             key = input("请输入密钥:\n")
             print("密钥修改完成")
