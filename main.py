@@ -52,10 +52,13 @@ def decrypt(msg, key):
     return result
 
 def clash(h, k):
-    for i in range(55295):
-        a = genHmac(chr(i), k)
-        if a == h:
-            return chr(i)
+    for i in range(1114111):
+        try:
+            a = genHmac(chr(i), k)
+            if a == h:
+                return chr(i)
+        except UnicodeEncodeError:
+            pass
     return False
 
 key = ""
