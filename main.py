@@ -5,10 +5,20 @@ import base64
 import time
 
 def zlibs(m):
-    return str(base64.b64encode(zlib.compress(m.encode("utf-8"),9)),"utf-8")
+    ec = m.encode("utf-8")
+    ziped = zlib.compress(ec,9)
+    b64 = base64.b64encode(ziped)
+    s = str(b64,"utf-8")
+    return s
+    #return str(base64.b64encode(zlib.compress(m.encode("utf-8"),9)),"utf-8")
 
 def dezlibs(m):
-    return str(bytes.decode(zlib.decompress(base64.b64decode(m))))
+    b64 = base64.b64decode(m)
+    decompressed = zlib.decompress(b64)
+    bytedecode = bytes.decode(decompressed)
+    s = str(bytedecode)
+    return s
+    # return str(bytes.decode(zlib.decompress(base64.b64decode(m))))
 
 def genHmac(m, k):
     message = m.encode('utf-8')
