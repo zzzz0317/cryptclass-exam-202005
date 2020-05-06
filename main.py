@@ -4,13 +4,15 @@ import zlib
 import base64
 import time
 
+
 def zlibs(m):
     ec = m.encode("utf-8")
-    ziped = zlib.compress(ec,9)
+    ziped = zlib.compress(ec, 9)
     b64 = base64.b64encode(ziped)
-    s = str(b64,"utf-8")
+    s = str(b64, "utf-8")
     return s
-    #return str(base64.b64encode(zlib.compress(m.encode("utf-8"),9)),"utf-8")
+    # return str(base64.b64encode(zlib.compress(m.encode("utf-8"),9)),"utf-8")
+
 
 def dezlibs(m):
     b64 = base64.b64decode(m)
@@ -20,14 +22,17 @@ def dezlibs(m):
     return s
     # return str(bytes.decode(zlib.decompress(base64.b64decode(m))))
 
+
 def genHmac(m, k):
     message = m.encode('utf-8')
     key = k.encode('utf-8')
     h = hmac.new(key, message, digestmod="sha3_256")
     return h.hexdigest()
 
+
 def genHashKey(m):
     return hashlib.sha3_512((m).encode('utf-8')).hexdigest()
+
 
 def encrypt(msg, key):
     r = ""
@@ -37,13 +42,21 @@ def encrypt(msg, key):
             key = genHashKey(aa)
         r += genHmac(a, key)
         aa += a
-    return r
+    return r + "#" + genHashKey(r)
+
 
 def decrypt(msg, key):
     try:
         msg = dezlibs(msg)
     except:
         return "解压缩不正常，请检查消息完整性"
+    try:
+        hashedKey = msg.split("#")[1]
+        msg = msg.split("#")[0]
+        if genHashKey(msg) != hashedKey:
+            raise RuntimeError()
+    except:
+        return "解压缩正常，但消息完整性检查失败，请检查消息是否遭到篡改"
     realLen = len(msg) / 64
     if realLen % 1 != 0:
         print("消息为: " + msg)
@@ -53,6 +66,7 @@ def decrypt(msg, key):
         ii = i * 64
         a = msg[ii:ii + 64]
         msgList.append(a)
+    print("原文共 " + str(len(msgList)) + " 个字符")
     result = ""
     for j in msgList:
         b = clash(j, key)
@@ -61,6 +75,7 @@ def decrypt(msg, key):
         result += b
         key = genHashKey(result)
     return result
+
 
 def clash(h, k):
     for i in range(1114111):
@@ -72,7 +87,9 @@ def clash(h, k):
             pass
     return False
 
+
 key = ""
+
 
 def main():
     key = input("请输入密钥:\n")
@@ -97,6 +114,7 @@ def main():
         else:
             print("输入有误，请重新输入")
     print("")
+
 
 if __name__ == '__main__':
     main()
