@@ -3,6 +3,7 @@ import hmac
 import zlib
 import base64
 import time
+import pyperclip
 
 
 def zlibs(m):
@@ -81,7 +82,8 @@ def decrypt(msg, key):
             return "解密失败，块{}: {}对撞无结果！请检查密钥！".format(mpos, zlibs(j))
         result += b
         key = genHashKey(result)
-    return result
+    pyperclip.copy(result)
+    return "\r解密结果:\n" + result + "\n解密结果已复制到剪贴板"
 
 
 def clash(mpos, mtotal, h, k):
@@ -107,7 +109,10 @@ def main():
         if (mode == "1"):
             print("加密结果:")
             startTime = time.time()
-            print(zlibs(encrypt(msg, key)))
+            cryptedText = zlibs(encrypt(msg, key))
+            print(cryptedText)
+            pyperclip.copy(cryptedText)
+            print("密文已复制到剪贴板")
             print("耗时:" + str(time.time() - startTime))
         elif (mode == "2"):
             print("执行解密:")
