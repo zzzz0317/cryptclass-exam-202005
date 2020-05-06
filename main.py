@@ -45,7 +45,12 @@ def encrypt(msg, key):
     return r + "#" + genHashKey(r)
 
 
+def ups(mpos, mtotal, cpos):
+    print("\r字符位置:{}/{}, 对撞位置{}".format(mpos, mtotal, cpos), end="")
+
+
 def decrypt(msg, key):
+    hashedStrLen = 64
     try:
         msg = dezlibs(msg)
     except:
@@ -57,28 +62,31 @@ def decrypt(msg, key):
             raise RuntimeError()
     except:
         return "解压缩正常，但消息完整性检查失败，请检查消息是否遭到篡改"
-    realLen = len(msg) / 64
+    realLen = len(msg) / hashedStrLen
     if realLen % 1 != 0:
         print("消息为: " + msg)
         return "解密失败，消息大小不正确，请检查消息完整性"
     msgList = []
     for i in range(int(realLen)):
-        ii = i * 64
-        a = msg[ii:ii + 64]
+        ii = i * hashedStrLen
+        a = msg[ii:ii + hashedStrLen]
         msgList.append(a)
-    print("原文共 " + str(len(msgList)) + " 个字符")
+    # print("原文共 " + str(len(msgList)) + " 个字符")
     result = ""
+    mpos = 0
     for j in msgList:
-        b = clash(j, key)
+        mpos += 1
+        b = clash(mpos, len(msgList), j, key)
         if (b == False):
-            return "解密失败，块\"" + zlibs(j) + "\"对撞无结果！请检查密钥！"
+            return "解密失败，块{}: {}对撞无结果！请检查密钥！".format(mpos, zlibs(j))
         result += b
         key = genHashKey(result)
     return result
 
 
-def clash(h, k):
+def clash(mpos, mtotal, h, k):
     for i in range(1114111):
+        ups(mpos, mtotal, i);
         try:
             a = genHmac(chr(i), k)
             if a == h:
@@ -102,7 +110,7 @@ def main():
             print(zlibs(encrypt(msg, key)))
             print("耗时:" + str(time.time() - startTime))
         elif (mode == "2"):
-            print("解密结果:")
+            print("执行解密:")
             startTime = time.time()
             print(decrypt(msg, key))
             print("耗时:" + str(time.time() - startTime))
@@ -113,7 +121,7 @@ def main():
             exit(0)
         else:
             print("输入有误，请重新输入")
-    print("")
+    print("\n")
 
 
 if __name__ == '__main__':
