@@ -38,24 +38,30 @@ def genHmac(m, k):
 
 
 # 生成分组密码和校验码的哈希函数
-def genHashKey(m):
-    return hashlib.sha3_512((m).encode('utf-8')).hexdigest()
+def genHashKey(k, m):
+    return genHmac(m, k)
+    # return genHash(k + m)
 
+def genHash(m):
+    return hashlib.sha3_512((m).encode('utf-8')).hexdigest()
 
 # 加密函数
 def encrypt(msg, key):
     r = ""
     aa = ""
+    # 保存原始密钥
+    orikey = key
+    key = genHash(key)
     # 逐个字符加密
     for a in msg:
         # 不是第一个字符的时候使用前面已加密字符的哈希值作为密钥
         if aa != "":
-            key = genHashKey(aa)
+            key = genHashKey(orikey, aa)
         # 计算当前字符的加密结果
         r += genHmac(a, key)
         # 将已加密字符放入变量
         aa += a
-    return r + "#" + genHashKey(r)
+    return r + "#" + genHash(r)
 
 
 # 输出解密进度
@@ -75,7 +81,7 @@ def decrypt(msg, key):
         hashedKey = msg.split("#")[1]
         msg = msg.split("#")[0]
         # 消息校验码不匹配
-        if genHashKey(msg) != hashedKey:
+        if genHash(msg) != hashedKey:
             raise Exception()
     except:
         # 消息校验码不匹配或不存在
@@ -97,14 +103,17 @@ def decrypt(msg, key):
     # print("原文共 " + str(len(msgList)) + " 个字符")
     result = ""
     mpos = 0
+    # 保存原始密钥
+    orikey = key
+    key = genHash(key)
     # 遍历密文列表
     for j in msgList:
         mpos += 1
         b = clash(mpos, len(msgList), j, key)
         if (b == False):
-            return "解密失败，块{}: {}对撞无结果！请检查密钥！".format(mpos, zlibs(j))
+            return "\r解密失败，块{}: {} 对撞无结果！请检查密钥！".format(mpos, zlibs(j))
         result += b
-        key = genHashKey(result)
+        key = genHashKey(orikey, result)
     # 解密结果复制到剪贴板
     pyperclip.copy(result)
     return "\r解密结果:\n" + result + "\n解密结果已复制到剪贴板"
