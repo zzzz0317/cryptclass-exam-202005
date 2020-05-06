@@ -1,6 +1,8 @@
 #  Copyright (c) 2020. Zhangzhe
 #  https://home.asec01.net/
 
+# 配置说明：
+# 安装以下库
 import hashlib
 import hmac
 import zlib
@@ -8,6 +10,8 @@ import base64
 import time
 import pyperclip
 
+# 使用说明
+# python3 [文件名]
 
 # 字符串压缩
 def zlibs(m):
